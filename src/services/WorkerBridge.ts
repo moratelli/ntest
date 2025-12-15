@@ -9,6 +9,7 @@ import type {
 
 type SimulationWorkerAPI = {
   upload(state: BoardState): Promise<UploadResponse>;
+  updateSession(sessionId: string, state: BoardState): Promise<UploadResponse>;
   step(sessionId: string): Promise<StepResponse>;
   jump(sessionId: string, generations: number): Promise<JumpResponse>;
   resolve(sessionId: string): Promise<ResolveResult>;
@@ -35,6 +36,14 @@ class WorkerBridge {
   public async upload(state: BoardState): Promise<UploadResponse> {
     this.initializeWorker();
     return this.api!.upload(state);
+  }
+
+  public async updateSession(
+    sessionId: string,
+    state: BoardState
+  ): Promise<UploadResponse> {
+    this.initializeWorker();
+    return this.api!.updateSession(sessionId, state);
   }
 
   public async step(sessionId: string): Promise<StepResponse> {

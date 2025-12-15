@@ -30,6 +30,20 @@ class SimulationWorker {
     };
   }
 
+  public updateSession(sessionId: string, state: BoardState): UploadResponse {
+    const engine = new GameOfLifeEngine(state);
+
+    this.sessions.set(sessionId, {
+      engine,
+      generation: 0,
+    });
+
+    return {
+      sessionId,
+      state: engine.getState(),
+    };
+  }
+
   public step(sessionId: string): StepResponse {
     const session = this.sessions.get(sessionId);
     if (!session) {
