@@ -6,7 +6,12 @@ export const GridCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [hasMoved, setHasMoved] = useState(false);
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [lastDrawnCell, setLastDrawnCell] = useState<[number, number] | null>(
+    null
+  );
 
   const currentState = useSimulationStore((state) => state.currentState);
   const toggleCell = useSimulationStore((state) => state.toggleCell);
@@ -87,43 +92,102 @@ export const GridCanvas = () => {
     }
   }, [currentState, panX, panY, zoom, cellSize]);
 
+  // Keyboard handlers for spacebar panning
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" && !isSpacePressed) {
+        e.preventDefault();
+        setIsSpacePressed(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        setIsSpacePressed(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [isSpacePressed]);
+
+  const getCellAtPosition = (
+    clientX: number,
+    clientY: number
+  ): [number, number] | null => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = clientX - rect.left;
+    const mouseY = clientY - rect.top;
+
+    const scaledCellSize = cellSize * zoom;
+    const gridX = Math.floor((mouseX - panX) / scaledCellSize);
+    const gridY = Math.floor((mouseY - panY) / scaledCellSize);
+
+    return [gridX, gridY];
+  };
+
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
     setIsDragging(true);
-    setHasMoved(false);
     setDragStart({ x: e.clientX, y: e.clientY });
+
+    // Right-click or Space+Left-click = Pan mode
+    if (e.button === 2 || (e.button === 0 && isSpacePressed)) {
+      setIsPanning(true);
+      setIsDrawing(false);
+    }
+    // Left-click without Space = Draw mode
+    else if (e.button === 0 && !isSpacePressed && currentState) {
+      setIsDrawing(true);
+      setIsPanning(false);
+
+      const cell = getCellAtPosition(e.clientX, e.clientY);
+      if (cell) {
+        setLastDrawnCell(cell);
+        toggleCell(cell[0], cell[1]);
+      }
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDragging) return;
 
-    const deltaX = e.clientX - dragStart.x;
-    const deltaY = e.clientY - dragStart.y;
+    if (isPanning) {
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
 
-    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
-      setHasMoved(true);
       adjustPan(deltaX, deltaY);
       setDragStart({ x: e.clientX, y: e.clientY });
+    } else if (isDrawing && currentState) {
+      const cell = getCellAtPosition(e.clientX, e.clientY);
+
+      if (cell && lastDrawnCell) {
+        const [lastX, lastY] = lastDrawnCell;
+        const [currentX, currentY] = cell;
+
+        // Only toggle if we moved to a different cell
+        if (lastX !== currentX || lastY !== currentY) {
+          toggleCell(currentX, currentY);
+          setLastDrawnCell(cell);
+        }
+      }
     }
   };
 
-  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!hasMoved && currentState) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      const scaledCellSize = cellSize * zoom;
-      const gridX = Math.floor((mouseX - panX) / scaledCellSize);
-      const gridY = Math.floor((mouseY - panY) / scaledCellSize);
-
-      toggleCell(gridX, gridY);
-    }
-
+  const handleMouseUp = () => {
     setIsDragging(false);
-    setHasMoved(false);
+    setIsPanning(false);
+    setIsDrawing(false);
+    setLastDrawnCell(null);
   };
 
   const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
@@ -137,6 +201,18 @@ export const GridCanvas = () => {
     adjustZoom(zoomDelta, mouseX, mouseY);
   };
 
+  // Prevent context menu on right-click
+  const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+  };
+
+  // Determine cursor based on mode
+  const getCursorClass = () => {
+    if (isSpacePressed || isPanning) return "cursor-move";
+    if (isDrawing) return "cursor-crosshair";
+    return "cursor-crosshair";
+  };
+
   return (
     <canvas
       ref={canvasRef}
@@ -145,12 +221,13 @@ export const GridCanvas = () => {
       onMouseUp={handleMouseUp}
       onMouseLeave={() => {
         setIsDragging(false);
-        setHasMoved(false);
+        setIsPanning(false);
+        setIsDrawing(false);
+        setLastDrawnCell(null);
       }}
       onWheel={handleWheel}
-      className={`h-full w-full touch-none ${
-        isDragging ? "cursor-move" : "cursor-pointer"
-      }`}
+      onContextMenu={handleContextMenu}
+      className={`h-full w-full touch-none ${getCursorClass()}`}
     />
   );
 };
