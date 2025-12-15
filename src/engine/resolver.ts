@@ -9,7 +9,7 @@ const MAX_TIME_MS = 10000;
  * Resolves a Game of Life pattern to its final state by detecting stability,
  * oscillation, or timing out after reaching generation/time limits.
  */
-export function resolvePattern(initialState: BoardState): ResolveResult {
+export const resolvePattern = (initialState: BoardState): ResolveResult => {
   const engine = new GameOfLifeEngine(initialState);
   const detector = new CycleDetector(2000);
   const startTime = Date.now();
@@ -53,4 +53,4 @@ export function resolvePattern(initialState: BoardState): ResolveResult {
     finalState: engine.getState(),
     generationsElapsed: generation,
   };
-}
+};
