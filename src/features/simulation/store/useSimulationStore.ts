@@ -136,8 +136,15 @@ export const useSimulationStore = create<SimulationStore>()(
             createSessionData(sessionId, result.finalState, newGeneration)
           );
 
+          const statusMessage =
+            result.status === "stable"
+              ? "Pattern stabilized"
+              : result.status === "oscillator"
+                ? "Pattern repeating"
+                : "Pattern still evolving";
+
           toast.success(
-            `Resolved to ${result.status} after ${result.generationsElapsed} generations`
+            `${statusMessage} after ${result.generationsElapsed.toLocaleString()} generations`
           );
         } catch (error) {
           set({ isResolving: false });
@@ -178,7 +185,7 @@ export const useSimulationStore = create<SimulationStore>()(
             createSessionData(response.sessionId, GLIDER, 0)
           );
 
-          toast.success("Simulation reset to glider pattern");
+          toast.success("Simulation reset to initial pattern");
         } catch (error) {
           toast.error("Failed to reset simulation. Please try again.");
           console.error("Reset failed:", error);
