@@ -79,7 +79,7 @@ export const GridCanvas = memo(() => {
       onMouseLeave={handleMouseLeave}
       onWheel={handleWheel}
       onContextMenu={handleContextMenu}
-      className={`h-full w-full touch-none ${getCursorClass()}`}
+      className={`size-full touch-none ${getCursorClass()}`}
     />
   );
 });

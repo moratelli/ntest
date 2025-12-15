@@ -89,7 +89,7 @@ export const SimulationControls = memo(() => {
           onChange={(e) => setJumpValue(parseInt(e.target.value, 10) || 0)}
           min="1"
           disabled={!sessionId}
-          className="w-20 rounded border border-border-light bg-bg-tertiary px-2 py-2 font-mono text-sm text-white focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-20 rounded border border-border-light bg-bg-tertiary p-2 font-mono text-sm text-white focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
         />
         <button
           onClick={handleJump}

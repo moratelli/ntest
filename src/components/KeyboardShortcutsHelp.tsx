@@ -7,7 +7,7 @@ export const KeyboardShortcutsHelp = memo(() => {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 border-border bg-bg-secondary text-white hover:bg-bg-tertiary focus:ring-2 focus:ring-primary"
+        className="fixed bottom-4 right-4 z-10 flex size-10 items-center justify-center rounded-full border-2 border-border bg-bg-secondary text-white hover:bg-bg-tertiary focus:ring-2 focus:ring-primary"
         aria-label="Show keyboard shortcuts"
         title="Keyboard shortcuts"
       >
@@ -22,7 +22,7 @@ export const KeyboardShortcutsHelp = memo(() => {
             </h3>
             <button
               onClick={() => setIsOpen(false)}
-              className="h-6 w-6 border-none bg-transparent text-xl leading-none text-white hover:text-gray-300"
+              className="size-6 border-none bg-transparent text-xl leading-none text-white hover:text-gray-300"
               aria-label="Close"
             >
               ×

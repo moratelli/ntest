@@ -26,7 +26,7 @@ export const Modal = memo(
             <h3 className="m-0 font-mono text-lg text-white">{title}</h3>
             <button
               onClick={onClose}
-              className="flex h-8 w-8 cursor-pointer items-center justify-center border-none bg-transparent p-0 text-[32px] leading-none text-white hover:text-gray-300 focus:ring-2 focus:ring-primary"
+              className="flex size-8 cursor-pointer items-center justify-center border-none bg-transparent p-0 text-[32px] leading-none text-white hover:text-gray-300 focus:ring-2 focus:ring-primary"
             >
               ×
             </button>

@@ -136,7 +136,7 @@ export const BoardUploader = () => {
               onChange={(e) => setJsonInput(e.target.value)}
               placeholder='{"alive": [[0,1], [1,2], [2,0], [2,1], [2,2]]}'
               disabled={loading}
-              className="min-h-[100px] resize-y rounded border border-border-light bg-bg-tertiary px-2 py-2 font-mono text-sm text-white focus:ring-2 focus:ring-primary"
+              className="min-h-[100px] resize-y rounded border border-border-light bg-bg-tertiary p-2 font-mono text-sm text-white focus:ring-2 focus:ring-primary"
             />
             <button
               onClick={handleTextSubmit}
@@ -148,7 +148,7 @@ export const BoardUploader = () => {
           </div>
 
           {error && (
-            <div className="rounded bg-red-600 px-2 py-2 font-mono text-sm text-white">
+            <div className="rounded bg-red-600 p-2 font-mono text-sm text-white">
               {error}
             </div>
           )}
@@ -182,7 +182,7 @@ export const BoardUploader = () => {
           </div>
 
           {error && (
-            <div className="rounded bg-red-600 px-2 py-2 font-mono text-sm text-white">
+            <div className="rounded bg-red-600 p-2 font-mono text-sm text-white">
               {error}
             </div>
           )}
@@ -193,7 +193,7 @@ export const BoardUploader = () => {
               <textarea
                 value={JSON.stringify(currentState, null, 2)}
                 readOnly
-                className="min-h-[200px] resize-y rounded border border-border-light bg-bg-tertiary px-2 py-2 font-mono text-sm text-white"
+                className="min-h-[200px] resize-y rounded border border-border-light bg-bg-tertiary p-2 font-mono text-sm text-white"
               />
             </div>
           )}
