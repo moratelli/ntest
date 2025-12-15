@@ -1,8 +1,8 @@
 import { useSimulationStore } from "@/features/simulation/store/useSimulationStore";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { useSimulationInterval } from "../hooks/useSimulationInterval";
 
-export const SimulationControls = () => {
+export const SimulationControls = memo(() => {
   const {
     generation,
     isRunning,
@@ -25,34 +25,37 @@ export const SimulationControls = () => {
     onTick: step,
   });
 
-  const handlePlayPause = () => {
+  const handlePlayPause = useCallback(() => {
     setRunning(!isRunning);
-  };
+  }, [isRunning, setRunning]);
 
-  const handleStep = async () => {
+  const handleStep = useCallback(async () => {
     if (sessionId) {
       await step();
     }
-  };
+  }, [sessionId, step]);
 
-  const handleJump = async () => {
+  const handleJump = useCallback(async () => {
     if (sessionId && jumpValue > 0) {
       setRunning(false);
       await jump(jumpValue);
     }
-  };
+  }, [sessionId, jumpValue, jump, setRunning]);
 
-  const handleResolve = async () => {
+  const handleResolve = useCallback(async () => {
     if (sessionId) {
       setRunning(false);
       await resolve();
     }
-  };
+  }, [sessionId, resolve, setRunning]);
 
-  const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    setSpeedDelay(value);
-  };
+  const handleSpeedChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = parseInt(e.target.value, 10);
+      setSpeedDelay(value);
+    },
+    [setSpeedDelay]
+  );
 
   return (
     <div className="flex flex-col gap-3 rounded-lg bg-bg-secondary p-4">
@@ -124,4 +127,6 @@ export const SimulationControls = () => {
       </div>
     </div>
   );
-};
+});
+
+SimulationControls.displayName = "SimulationControls";
