@@ -14,8 +14,8 @@ describe("CycleDetector", () => {
       ],
     };
 
-    detector.addState(block, 0);
-    detector.addState(block, 1);
+    detector.addState(block);
+    detector.addState(block);
 
     expect(detector.isStable()).toBe(true);
   });
@@ -39,11 +39,11 @@ describe("CycleDetector", () => {
       ],
     };
 
-    detector.addState(blinkerH, 0);
-    detector.addState(blinkerV, 1);
-    detector.addState(blinkerH, 2);
+    detector.addState(blinkerH);
+    detector.addState(blinkerV);
+    detector.addState(blinkerH);
 
-    const cycle = detector.detectCycle(2);
+    const cycle = detector.detectCycle();
 
     expect(cycle).not.toBeNull();
     expect(cycle?.period).toBe(2);
@@ -56,10 +56,10 @@ describe("CycleDetector", () => {
       const state: BoardState = {
         alive: [[i, 0]],
       };
-      detector.addState(state, i);
+      detector.addState(state);
 
       if (i > 0) {
-        const cycle = detector.detectCycle(i);
+        const cycle = detector.detectCycle();
         expect(cycle).toBeNull();
       }
     }
@@ -72,13 +72,13 @@ describe("CycleDetector", () => {
       const state: BoardState = {
         alive: [[i, 0]],
       };
-      detector.addState(state, i);
+      detector.addState(state);
     }
 
     const differentState: BoardState = { alive: [[100, 100]] };
-    detector.addState(differentState, 10);
+    detector.addState(differentState);
 
-    const cycle = detector.detectCycle(10);
+    const cycle = detector.detectCycle();
     expect(cycle).toBeNull();
   });
 
@@ -86,7 +86,7 @@ describe("CycleDetector", () => {
     const detector = new CycleDetector(10);
     const state: BoardState = { alive: [[0, 0]] };
 
-    detector.addState(state, 0);
+    detector.addState(state);
 
     expect(detector.isStable()).toBe(false);
   });

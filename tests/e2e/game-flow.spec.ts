@@ -36,16 +36,15 @@ test.describe("Conway's Game of Life E2E Tests", () => {
     expect(generation).toBeGreaterThan(0);
   });
 
-  // test("should jump multiple generations", import state/i }).click();
+  test("should jump multiple generations", async ({ page }) => {
+    await page.locator('input[type="number"]').fill("10");
+    await page.getByRole("button", { name: /jump/i }).click();
 
-  //   await page.locator('input[type="number"]').fill("10");
-  //   await page.getByRole("button", { name: /jump/i }).click();
+    await page.waitForTimeout(500);
 
-  //   await page.waitForTimeout(500);
-
-  //   const generationText = page.locator("text=/Generation:/");
-  //   await expect(generationText).toContainText("Generation: 10");
-  // });
+    const generationText = page.locator("text=/Generation:/");
+    await expect(generationText).toContainText("Generation: 10");
+  });
 
   test("should upload JSON state", async ({ page }) => {
     await page.getByRole("button", { name: /import state/i }).click();
@@ -91,7 +90,7 @@ test.describe("Conway's Game of Life E2E Tests", () => {
   });
 
   test("should persist state across page reloads", async ({ page }) => {
-    await page.getByRole("button", { name: /load example/i }).click();
+    await page.getByRole("button", { name: /^step$/i }).click();
     await page.getByRole("button", { name: /^step$/i }).click();
 
     await page.waitForTimeout(1000);
@@ -108,20 +107,4 @@ test.describe("Conway's Game of Life E2E Tests", () => {
 
     await expect(page.locator("text=/Speed: 500ms/i")).toBeVisible();
   });
-
-  // test("should interact with canvas for pan", async ({ page }) => {
-  //   await page.getByRole("button", { name: /load example/i }).click();
-
-  //   if (box) {
-  //     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  //     await page.mouse.down();
-  //     await page.mouse.move(
-  //       box.x + box.width / 2 + 100,
-  //       box.y + box.height / 2 + 100
-  //     );
-  //     await page.mouse.up();
-  //   }
-
-  //   await expect(canvas).toBeVisible();
-  // });
 });
