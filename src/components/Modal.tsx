@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useModalInteractions } from "./hooks/useModalInteractions";
 
 interface ModalProps {
   isOpen: boolean;
@@ -10,32 +11,7 @@ interface ModalProps {
 export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-      return () => document.removeEventListener("keydown", handleEscape);
-    }
-  }, [isOpen, onClose]);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (modalRef.current && e.target === modalRef.current) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isOpen, onClose]);
+  useModalInteractions({ isOpen, onClose, modalRef });
 
   if (!isOpen) return null;
 
