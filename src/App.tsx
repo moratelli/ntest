@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from "react";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { SimulationControls } from "./features/controls/components/SimulationControls";
+import { GridCanvas } from "./features/grid/components/GridCanvas";
+import { useSimulationStore } from "./features/simulation/store/useSimulationStore";
+import { BoardUploader } from "./features/upload/components/BoardUploader";
 
-function App() {
-  const [count, setCount] = useState(0)
+const AppContent = () => {
+  const restoreSession = useSimulationStore((state) => state.restoreSession);
+
+  useEffect(() => {
+    restoreSession();
+  }, [restoreSession]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="flex h-screen flex-col bg-bg-primary">
+      <header className="border-b-2 border-border bg-bg-secondary p-4">
+        <h1 className="m-0 text-center font-mono text-2xl text-primary">
+          Conway's Game of Life
+        </h1>
+      </header>
 
-export default App
+      <main className="relative flex-1 overflow-hidden">
+        <GridCanvas />
+
+        <aside className="absolute left-4 top-4 z-10 flex w-[300px] max-h-[calc(100%-32px)] flex-col gap-4 overflow-y-auto rounded-lg border-2 border-border bg-bg-primary/95 p-4 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+          <BoardUploader />
+          <SimulationControls />
+        </aside>
+      </main>
+    </div>
+  );
+};
+
+export const App = () => {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
+  );
+};
