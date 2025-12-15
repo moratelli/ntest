@@ -1,5 +1,7 @@
 # Conway's Game of Life
 
+**Live Demo**: https://ntest-xi.vercel.app/
+
 React implementation with Web Worker-based simulation, cycle detection, and persistent sessions.
 
 ## Quick Start
@@ -12,22 +14,26 @@ npm run dev
 ## Architecture
 
 **Engine** (`src/engine/`)
+
 - Pure TypeScript, zero React dependencies
 - Sparse grid (`Set<string>`) for unbounded patterns
 - O(n) where n = alive cells + neighbors
 - FNV-1a hashing for cycle detection (2000-state circular buffer)
 
 **Worker** (`src/workers/`)
+
 - Comlink for type-safe RPC
 - Session-based: `upload() → step()/jump()/resolve()`
 - Non-blocking UI during heavy computation
 
 **Persistence** (`src/persistence/`)
+
 - IndexedDB with localStorage fallback
 - Debounced auto-save (500ms)
 - Stores cell state + viewport (zoom/pan)
 
 **State** (Zustand)
+
 - `useSimulationStore`: session, generation, running state
 - `useGridStore`: viewport (decoupled to prevent render cascades)
 
@@ -58,7 +64,12 @@ npm run lint          # ESLint + pre-commit hooks
 
 ```typescript
 // Upload new board, get session ID
-const { sessionId } = await workerBridge.upload({ alive: [[0,1], [1,2]] });
+const { sessionId } = await workerBridge.upload({
+  alive: [
+    [0, 1],
+    [1, 2],
+  ],
+});
 
 // Advance one generation
 const { state, generation } = await workerBridge.step(sessionId);
@@ -74,6 +85,7 @@ const { status, finalState } = await workerBridge.resolve(sessionId);
 ## Production
 
 **Deploy:**
+
 ```bash
 vercel --prod  # Zero config, includes Analytics + Speed Insights
 ```
