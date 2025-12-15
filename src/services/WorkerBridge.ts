@@ -35,7 +35,10 @@ class WorkerBridge {
 
   public async upload(state: BoardState): Promise<UploadResponse> {
     this.initializeWorker();
-    return this.api!.upload(state);
+    if (!this.api) {
+      throw new Error("Worker failed to initialize");
+    }
+    return this.api.upload(state);
   }
 
   public async updateSession(
@@ -43,12 +46,18 @@ class WorkerBridge {
     state: BoardState
   ): Promise<UploadResponse> {
     this.initializeWorker();
-    return this.api!.updateSession(sessionId, state);
+    if (!this.api) {
+      throw new Error("Worker failed to initialize");
+    }
+    return this.api.updateSession(sessionId, state);
   }
 
   public async step(sessionId: string): Promise<StepResponse> {
     this.initializeWorker();
-    return this.api!.step(sessionId);
+    if (!this.api) {
+      throw new Error("Worker failed to initialize");
+    }
+    return this.api.step(sessionId);
   }
 
   public async jump(
@@ -56,17 +65,26 @@ class WorkerBridge {
     generations: number
   ): Promise<JumpResponse> {
     this.initializeWorker();
-    return this.api!.jump(sessionId, generations);
+    if (!this.api) {
+      throw new Error("Worker failed to initialize");
+    }
+    return this.api.jump(sessionId, generations);
   }
 
   public async resolve(sessionId: string): Promise<ResolveResult> {
     this.initializeWorker();
-    return this.api!.resolve(sessionId);
+    if (!this.api) {
+      throw new Error("Worker failed to initialize");
+    }
+    return this.api.resolve(sessionId);
   }
 
   public async deleteSession(sessionId: string): Promise<void> {
     this.initializeWorker();
-    return this.api!.deleteSession(sessionId);
+    if (!this.api) {
+      throw new Error("Worker failed to initialize");
+    }
+    return this.api.deleteSession(sessionId);
   }
 
   public terminate(): void {
