@@ -9,6 +9,11 @@ export interface PersistedState {
   state: BoardState;
   generation: number;
   timestamp: number;
+  gridState?: {
+    panX: number;
+    panY: number;
+    zoom: number;
+  };
 }
 
 /**

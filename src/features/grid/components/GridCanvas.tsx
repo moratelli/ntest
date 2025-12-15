@@ -85,5 +85,3 @@ export const GridCanvas = memo(() => {
 });
 
 GridCanvas.displayName = "GridCanvas";
-
-GridCanvas.displayName = "GridCanvas";

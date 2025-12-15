@@ -5,6 +5,7 @@ import { workerBridge } from "@/services/WorkerBridge";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { createSessionData, restoreGridState } from "./sessionHelpers";
 
 interface SimulationState {
   sessionId: string | null;
@@ -51,12 +52,9 @@ export const useSimulationStore = create<SimulationStore>()(
             isRunning: false,
           });
 
-          sessionManager.saveNow({
-            sessionId: response.sessionId,
-            state: response.state,
-            generation: 0,
-            timestamp: Date.now(),
-          });
+          sessionManager.saveNow(
+            createSessionData(response.sessionId, response.state, 0)
+          );
         } catch (error) {
           toast.error("Failed to upload state. Please try again.");
           console.error("Upload failed:", error);
@@ -78,12 +76,9 @@ export const useSimulationStore = create<SimulationStore>()(
             generation: response.generation,
           });
 
-          sessionManager.scheduleSave({
-            sessionId,
-            state: response.state,
-            generation: response.generation,
-            timestamp: Date.now(),
-          });
+          sessionManager.scheduleSave(
+            createSessionData(sessionId, response.state, response.generation)
+          );
         } catch (error) {
           toast.error("Failed to advance simulation. Please try again.");
           console.error("Step failed:", error);
@@ -105,12 +100,9 @@ export const useSimulationStore = create<SimulationStore>()(
             generation: response.generation,
           });
 
-          sessionManager.scheduleSave({
-            sessionId,
-            state: response.state,
-            generation: response.generation,
-            timestamp: Date.now(),
-          });
+          sessionManager.scheduleSave(
+            createSessionData(sessionId, response.state, response.generation)
+          );
         } catch (error) {
           toast.error(
             `Failed to jump ${generations} generations. Please try again.`
@@ -140,12 +132,9 @@ export const useSimulationStore = create<SimulationStore>()(
             isResolving: false,
           });
 
-          sessionManager.scheduleSave({
-            sessionId,
-            state: result.finalState,
-            generation: newGeneration,
-            timestamp: Date.now(),
-          });
+          sessionManager.scheduleSave(
+            createSessionData(sessionId, result.finalState, newGeneration)
+          );
 
           toast.success(
             `Resolved to ${result.status} after ${result.generationsElapsed} generations`
@@ -185,12 +174,9 @@ export const useSimulationStore = create<SimulationStore>()(
             isResolving: false,
           });
 
-          await sessionManager.saveNow({
-            sessionId: response.sessionId,
-            state: GLIDER,
-            generation: 0,
-            timestamp: Date.now(),
-          });
+          sessionManager.saveNow(
+            createSessionData(response.sessionId, GLIDER, 0)
+          );
 
           toast.success("Simulation reset to glider pattern");
         } catch (error) {
@@ -210,6 +196,8 @@ export const useSimulationStore = create<SimulationStore>()(
             generation: persisted.generation,
             isRunning: false,
           });
+
+          restoreGridState(persisted.gridState);
         } else {
           const response = await workerBridge.upload(GLIDER);
           set({
@@ -269,12 +257,7 @@ export const useSimulationStore = create<SimulationStore>()(
               generation: 0,
             });
 
-            const saveData = {
-              sessionId: sessionId, // Use existing sessionId
-              state: response.state,
-              generation: 0,
-              timestamp: Date.now(),
-            };
+            const saveData = createSessionData(sessionId, response.state, 0);
 
             if (isRunning) {
               sessionManager.scheduleSave(saveData, 500);
