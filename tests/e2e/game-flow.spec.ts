@@ -52,7 +52,7 @@ test.describe("Conway's Game of Life E2E Tests", () => {
     const jsonInput = page.locator("textarea");
     await jsonInput.fill('{"alive": [[0,0], [1,1], [2,2]]}');
 
-    await page.getByRole("button", { name: /upload/i }).click();
+    await page.getByRole("button", { name: "Upload", exact: true }).click();
 
     const generationText = page.locator("text=/Generation:/");
     await expect(generationText).toContainText("Generation: 0");
@@ -64,7 +64,7 @@ test.describe("Conway's Game of Life E2E Tests", () => {
     const jsonInput = page.locator("textarea");
     await jsonInput.fill("invalid json");
 
-    await page.getByRole("button", { name: /upload/i }).click();
+    await page.getByRole("button", { name: "Upload", exact: true }).click();
 
     await expect(page.locator("text=/Invalid JSON format/i")).toBeVisible();
   });
@@ -80,8 +80,8 @@ test.describe("Conway's Game of Life E2E Tests", () => {
   });
 
   test("should reset simulation to glider", async ({ page }) => {
-    await page.getByRole("button", { name: /step/i }).click();
-    await page.getByRole("button", { name: /step/i }).click();
+    await page.getByRole("button", { name: "Step", exact: true }).click();
+    await page.getByRole("button", { name: "Step", exact: true }).click();
 
     await page.getByRole("button", { name: /reset state/i }).click();
 
@@ -90,8 +90,8 @@ test.describe("Conway's Game of Life E2E Tests", () => {
   });
 
   test("should persist state across page reloads", async ({ page }) => {
-    await page.getByRole("button", { name: /^step$/i }).click();
-    await page.getByRole("button", { name: /^step$/i }).click();
+    await page.getByRole("button", { name: "Step", exact: true }).click();
+    await page.getByRole("button", { name: "Step", exact: true }).click();
 
     await page.waitForTimeout(1000);
 
