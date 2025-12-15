@@ -80,8 +80,8 @@ test.describe("Conway's Game of Life E2E Tests", () => {
   });
 
   test("should reset simulation to glider", async ({ page }) => {
-    await page.getByRole("button", { name: "Step", exact: true }).click();
-    await page.getByRole("button", { name: "Step", exact: true }).click();
+    await page.getByRole("button", { name: /step/i }).click();
+    await page.getByRole("button", { name: /step/i }).click();
 
     await page.getByRole("button", { name: /reset state/i }).click();
 
@@ -90,8 +90,8 @@ test.describe("Conway's Game of Life E2E Tests", () => {
   });
 
   test("should persist state across page reloads", async ({ page }) => {
-    await page.getByRole("button", { name: "Step", exact: true }).click();
-    await page.getByRole("button", { name: "Step", exact: true }).click();
+    await page.getByRole("button", { name: /step/i }).click();
+    await page.getByRole("button", { name: /step/i }).click();
 
     await page.waitForTimeout(1000);
 
