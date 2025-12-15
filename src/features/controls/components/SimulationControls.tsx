@@ -1,5 +1,6 @@
 import { useSimulationStore } from "@/features/simulation/store/useSimulationStore";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { useSimulationInterval } from "../hooks/useSimulationInterval";
 
 export const SimulationControls = () => {
   const {
@@ -16,24 +17,13 @@ export const SimulationControls = () => {
   } = useSimulationStore();
 
   const [jumpValue, setJumpValue] = useState(10);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    if (isRunning && sessionId) {
-      intervalRef.current = setInterval(() => {
-        step();
-      }, speedDelayMs);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isRunning, speedDelayMs, sessionId, step]);
+  useSimulationInterval({
+    isRunning,
+    sessionId,
+    speedDelayMs,
+    onTick: step,
+  });
 
   const handlePlayPause = () => {
     setRunning(!isRunning);
@@ -67,7 +57,9 @@ export const SimulationControls = () => {
   return (
     <div className="flex flex-col gap-3 rounded-lg bg-bg-secondary p-4">
       <div className="flex items-center gap-2">
-        <div className="font-mono text-sm text-white">Generation: {generation}</div>
+        <div className="font-mono text-sm text-white">
+          Generation: {generation}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
