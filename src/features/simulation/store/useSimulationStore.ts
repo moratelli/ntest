@@ -2,6 +2,7 @@ import { GLIDER } from "@/engine/examples";
 import type { BoardState } from "@/engine/types";
 import { sessionManager } from "@/persistence/SessionManager";
 import { workerBridge } from "@/services/WorkerBridge";
+import toast from "react-hot-toast";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -41,61 +42,90 @@ export const useSimulationStore = create<SimulationStore>()(
       isResolving: false,
 
       uploadState: async (state: BoardState) => {
-        const response = await workerBridge.upload(state);
-        set({
-          sessionId: response.sessionId,
-          currentState: response.state,
-          generation: 0,
-          isRunning: false,
-        });
+        try {
+          const response = await workerBridge.upload(state);
+          set({
+            sessionId: response.sessionId,
+            currentState: response.state,
+            generation: 0,
+            isRunning: false,
+          });
 
-        sessionManager.saveNow({
-          sessionId: response.sessionId,
-          state: response.state,
-          generation: 0,
-          timestamp: Date.now(),
-        });
+          sessionManager.saveNow({
+            sessionId: response.sessionId,
+            state: response.state,
+            generation: 0,
+            timestamp: Date.now(),
+          });
+        } catch (error) {
+          toast.error("Failed to upload state. Please try again.");
+          console.error("Upload failed:", error);
+          throw error;
+        }
       },
 
       step: async () => {
         const { sessionId } = get();
-        if (!sessionId) return;
+        if (!sessionId) {
+          toast.error("No active session. Please upload a state first.");
+          return;
+        }
 
-        const response = await workerBridge.step(sessionId);
-        set({
-          currentState: response.state,
-          generation: response.generation,
-        });
+        try {
+          const response = await workerBridge.step(sessionId);
+          set({
+            currentState: response.state,
+            generation: response.generation,
+          });
 
-        sessionManager.scheduleSave({
-          sessionId,
-          state: response.state,
-          generation: response.generation,
-          timestamp: Date.now(),
-        });
+          sessionManager.scheduleSave({
+            sessionId,
+            state: response.state,
+            generation: response.generation,
+            timestamp: Date.now(),
+          });
+        } catch (error) {
+          toast.error("Failed to advance simulation. Please try again.");
+          console.error("Step failed:", error);
+          throw error;
+        }
       },
 
       jump: async (generations: number) => {
         const { sessionId } = get();
-        if (!sessionId) return;
+        if (!sessionId) {
+          toast.error("No active session. Please upload a state first.");
+          return;
+        }
 
-        const response = await workerBridge.jump(sessionId, generations);
-        set({
-          currentState: response.state,
-          generation: response.generation,
-        });
+        try {
+          const response = await workerBridge.jump(sessionId, generations);
+          set({
+            currentState: response.state,
+            generation: response.generation,
+          });
 
-        sessionManager.scheduleSave({
-          sessionId,
-          state: response.state,
-          generation: response.generation,
-          timestamp: Date.now(),
-        });
+          sessionManager.scheduleSave({
+            sessionId,
+            state: response.state,
+            generation: response.generation,
+            timestamp: Date.now(),
+          });
+        } catch (error) {
+          toast.error(
+            `Failed to jump ${generations} generations. Please try again.`
+          );
+          console.error("Jump failed:", error);
+          throw error;
+        }
       },
 
       resolve: async () => {
         const { sessionId } = get();
-        if (!sessionId) return;
+        if (!sessionId) {
+          toast.error("No active session. Please upload a state first.");
+          return;
+        }
 
         set({ isResolving: true, isRunning: false });
 
@@ -116,8 +146,14 @@ export const useSimulationStore = create<SimulationStore>()(
             generation: newGeneration,
             timestamp: Date.now(),
           });
+
+          toast.success(
+            `Resolved to ${result.status} after ${result.generationsElapsed} generations`
+          );
         } catch (error) {
           set({ isResolving: false });
+          toast.error("Failed to resolve pattern. Please try again.");
+          console.error("Resolve failed:", error);
           throw error;
         }
       },
@@ -131,29 +167,37 @@ export const useSimulationStore = create<SimulationStore>()(
       },
 
       reset: async () => {
-        const { sessionId } = get();
-        if (sessionId) {
-          workerBridge.deleteSession(sessionId);
+        try {
+          const { sessionId } = get();
+          if (sessionId) {
+            workerBridge.deleteSession(sessionId);
+          }
+
+          // Clear all sessions from IndexedDB to ensure clean slate
+          await sessionManager.deleteAllSessions();
+
+          const response = await workerBridge.upload(GLIDER);
+          set({
+            sessionId: response.sessionId,
+            currentState: GLIDER,
+            generation: 0,
+            isRunning: false,
+            isResolving: false,
+          });
+
+          await sessionManager.saveNow({
+            sessionId: response.sessionId,
+            state: GLIDER,
+            generation: 0,
+            timestamp: Date.now(),
+          });
+
+          toast.success("Simulation reset to glider pattern");
+        } catch (error) {
+          toast.error("Failed to reset simulation. Please try again.");
+          console.error("Reset failed:", error);
+          throw error;
         }
-
-        // Clear all sessions from IndexedDB to ensure clean slate
-        await sessionManager.deleteAllSessions();
-
-        const response = await workerBridge.upload(GLIDER);
-        set({
-          sessionId: response.sessionId,
-          currentState: GLIDER,
-          generation: 0,
-          isRunning: false,
-          isResolving: false,
-        });
-
-        await sessionManager.saveNow({
-          sessionId: response.sessionId,
-          state: GLIDER,
-          generation: 0,
-          timestamp: Date.now(),
-        });
       },
 
       restoreSession: async () => {
@@ -201,7 +245,10 @@ export const useSimulationStore = create<SimulationStore>()(
 
       toggleCell: (x: number, y: number) => {
         const { currentState, sessionId, isRunning } = get();
-        if (!currentState || !sessionId) return;
+        if (!currentState || !sessionId) {
+          toast.error("No active session. Please upload a state first.");
+          return;
+        }
 
         const cellExists = currentState.alive.some(
           ([cx, cy]) => cx === x && cy === y
@@ -213,26 +260,32 @@ export const useSimulationStore = create<SimulationStore>()(
 
         const newState: BoardState = { alive: newAlive };
 
-        workerBridge.upload(newState).then((response) => {
-          set({
-            sessionId: response.sessionId,
-            currentState: response.state,
-            generation: 0,
+        // Reuse existing sessionId to prevent bloat
+        workerBridge
+          .updateSession(sessionId, newState)
+          .then((response) => {
+            set({
+              currentState: response.state,
+              generation: 0,
+            });
+
+            const saveData = {
+              sessionId: sessionId, // Use existing sessionId
+              state: response.state,
+              generation: 0,
+              timestamp: Date.now(),
+            };
+
+            if (isRunning) {
+              sessionManager.scheduleSave(saveData, 500);
+            } else {
+              sessionManager.saveNow(saveData);
+            }
+          })
+          .catch((error) => {
+            toast.error("Failed to update cell. Please try again.");
+            console.error("Toggle cell failed:", error);
           });
-
-          const saveData = {
-            sessionId: response.sessionId,
-            state: response.state,
-            generation: 0,
-            timestamp: Date.now(),
-          };
-
-          if (isRunning) {
-            sessionManager.scheduleSave(saveData, 500);
-          } else {
-            sessionManager.saveNow(saveData);
-          }
-        });
       },
     }),
     { name: "SimulationStore" }
