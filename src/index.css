@@ -4,16 +4,16 @@
 
 @layer base {
   * {
-    @apply box-border m-0 p-0;
+    @apply m-0 box-border p-0;
   }
 
   html,
   body,
   #root {
-    @apply w-full h-full overflow-hidden;
+    @apply h-full w-full overflow-hidden;
   }
 
   body {
-    @apply font-mono bg-bg-primary text-white;
+    @apply bg-bg-primary font-mono text-white;
   }
 }

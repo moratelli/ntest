@@ -128,7 +128,9 @@ export const BoardUploader = () => {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="font-mono text-sm text-white">Or paste JSON:</label>
+            <label className="font-mono text-sm text-white">
+              Or paste JSON:
+            </label>
             <textarea
               value={jsonInput}
               onChange={(e) => setJsonInput(e.target.value)}
